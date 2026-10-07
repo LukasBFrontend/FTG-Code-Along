@@ -13,10 +13,6 @@ public class Player : MonoBehaviour
     {
         moveRef.action.Enable();
     }
-    void Start()
-    {
-        
-    }
 
     void Update()
     {
