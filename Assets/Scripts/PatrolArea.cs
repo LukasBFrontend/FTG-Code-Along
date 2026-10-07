@@ -13,6 +13,7 @@ public class PatrolArea : MonoBehaviour
             return;
         }
 
+        Debug.Log("Player enter");
         _isPlayerInside = true;
     }
 
@@ -23,6 +24,7 @@ public class PatrolArea : MonoBehaviour
             return;
         }
 
+        Debug.Log("Player exit");
         _isPlayerInside = false;
     }
 }
