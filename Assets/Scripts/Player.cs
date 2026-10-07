@@ -29,4 +29,14 @@ public class Player : MonoBehaviour
 
         rigidbody.linearVelocity = direction * moveSpeed;
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (!other.TryGetComponent<Humanoid>(out var guard))
+        {
+            return;
+        }
+
+        Destroy(gameObject);
+    }
 }

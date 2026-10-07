@@ -3,8 +3,8 @@ using UnityEngine.Events;
 
 public class PatrolArea : MonoBehaviour
 {
-    public static UnityEvent<Player> IntruderDetectedEvent;
-    public static UnityEvent<Player> IntruderLeftEvent;
+    public static bool isPlayerInside => _isPlayerInside;
+    static bool _isPlayerInside;
 
     void OnTriggerEnter(Collider other)
     {
@@ -13,7 +13,7 @@ public class PatrolArea : MonoBehaviour
             return;
         }
 
-        IntruderDetectedEvent.Invoke(player);
+        _isPlayerInside = true;
     }
 
     void OnTriggerExit(Collider other)
@@ -23,6 +23,6 @@ public class PatrolArea : MonoBehaviour
             return;
         }
 
-        IntruderLeftEvent.Invoke(player);
+        _isPlayerInside = false;
     }
 }
