@@ -63,7 +63,7 @@ public class Humanoid : MonoBehaviour
         positionFlat.y = 0;
         
         float distance = Vector3.Distance(agent.pathEndPosition, positionFlat);
-        Debug.Log(distance);
+        //Debug.Log(distance);
 
         if (distance < 0.75)
         {
