@@ -11,11 +11,12 @@ public class Humanoid : MonoBehaviour
     public Transform target;
     
     public float fov = 90;
-
     public float useFOV
     {
         get { return Mathf.Cos(fov * 0.5f * Mathf.Deg2Rad); }
     }
+
+    public float distToSee = 10;
     
     IAgentStates currentState = new PatrolState();
     
@@ -89,6 +90,9 @@ public class Humanoid : MonoBehaviour
         Gizmos.color = Color.blue;
         Gizmos.DrawLine(transform.position, transform.position + sideRight * linDis);
         Gizmos.DrawLine(transform.position, transform.position + sideLeft * linDis);
+        
+        Gizmos.color = Color.red;
+        Gizmos.DrawLine(transform.position, transform.position + (transform.forward * distToSee));
     }
 }
 
@@ -105,7 +109,7 @@ class PatrolState : IAgentStates
 
         if (h.target != null)
         {
-            if (Physics.Raycast(h.transform.position, h.target.position - h.transform.position, out RaycastHit hit, Mathf.Infinity))
+            if (Physics.Raycast(h.transform.position, h.target.position - h.transform.position, out RaycastHit hit, h.distToSee))
             {
                 if (hit.collider.tag == "Player")
                 {
@@ -113,7 +117,8 @@ class PatrolState : IAgentStates
                     {
                         Debug.Log("Found Player");
                         
-                        h.ChangeState(new ChasingState());
+                        if(PatrolArea.isPlayerInside)
+                            h.ChangeState(new ChasingState());
                     }
                 }
             }
@@ -137,8 +142,11 @@ class ChasingState : IAgentStates
     {
         h.agent.SetDestination(h.target.position);
         
+        if(!PatrolArea.isPlayerInside)
+            h.ChangeState(new PatrolState());
+        
         if (Physics.Raycast(h.transform.position, h.target.position - h.transform.position, out RaycastHit hit,
-                Mathf.Infinity))
+                h.distToSee))
         {
             if (hit.collider.tag != "Player")
             {
