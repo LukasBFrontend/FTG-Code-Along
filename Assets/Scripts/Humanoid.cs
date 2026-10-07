@@ -1,4 +1,3 @@
-using System.Linq;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,6 +18,8 @@ public class Humanoid : MonoBehaviour
     public float distToSee = 10;
     
     IAgentStates currentState = new PatrolState();
+    
+    public string CurrentStateName = "None";
     
     void Start()
     {
@@ -101,6 +102,8 @@ class PatrolState : IAgentStates
     public void Enter(Humanoid h)
     {
         Debug.Log("Entered Patrol");
+        
+        h.CurrentStateName = "Patrol State";
     }
     
     public void Update(Humanoid h)
@@ -136,6 +139,8 @@ class ChasingState : IAgentStates
     public void Enter(Humanoid h)
     {
         Debug.Log("Chasing Player");
+        
+        h.CurrentStateName =  "Chasing State";
     }
     
     public void Update(Humanoid h)
