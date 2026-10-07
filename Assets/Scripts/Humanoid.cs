@@ -5,7 +5,7 @@ using UnityEngine.AI;
 public class Humanoid : MonoBehaviour
 {
     [SerializeField] Transform[] patrolPoints;
-    NavMeshAgent agent;
+    public NavMeshAgent agent;
     [SerializeField] int index = 0;
 
     public Transform target;
@@ -14,10 +14,11 @@ public class Humanoid : MonoBehaviour
 
     public float useFOV
     {
-        get{return Mathf.Cos(Mathf.Deg2Rad * fov *0.5f);}
+        get { return Mathf.Cos(fov * 0.5f * Mathf.Deg2Rad); }
     }
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    IAgentStates currentState = new PatrolState();
+    
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -25,11 +26,21 @@ public class Humanoid : MonoBehaviour
         NewPathPoint();
     }
 
-    // Update is called once per frame
+    public void ChangeState(IAgentStates newState)
+    {
+        currentState.Exit(this);
+        
+        currentState = newState;
+        newState.Enter(this);
+    }
+
     void Update()
     {
+        currentState.Update(this);
+    }
 
-
+    public void Patrol()
+    {
         if (HasReachedTargetPoint())
         {
             index++;
@@ -81,7 +92,7 @@ public class Humanoid : MonoBehaviour
     }
 }
 
-class Patrol : IAgentStates
+class PatrolState : IAgentStates
 {
     public void Enter(Humanoid h)
     {
@@ -90,30 +101,59 @@ class Patrol : IAgentStates
     
     public void Update(Humanoid h)
     {
-        
+        h.Patrol();
+
+        if (h.target != null)
+        {
+            if (Physics.Raycast(h.transform.position, h.target.position - h.transform.position, out RaycastHit hit, Mathf.Infinity))
+            {
+                if (hit.collider.tag == "Player")
+                {
+                    if(Vector3.Dot(h.transform.forward, (h.target.position - h.transform.position).normalized) > h.useFOV)
+                    {
+                        Debug.Log("Found Player");
+                        
+                        h.ChangeState(new ChasingState());
+                    }
+                }
+            }
+        }
     }
     
     public void Exit(Humanoid h)
     {
-        
+        Debug.Log("Exited Patrol");
     }
 }
 
-class Chasing : IAgentStates
+class ChasingState : IAgentStates
 {
     public void Enter(Humanoid h)
     {
-        Debug.Log("Found Player");
+        Debug.Log("Chasing Player");
     }
     
     public void Update(Humanoid h)
     {
+        h.agent.SetDestination(h.target.position);
         
+        if (Physics.Raycast(h.transform.position, h.target.position - h.transform.position, out RaycastHit hit,
+                Mathf.Infinity))
+        {
+            if (hit.collider.tag != "Player")
+            {
+                h.ChangeState(new PatrolState());
+                return;
+            }
+        }
+        
+        if(Vector3.Dot(h.transform.forward, (h.target.position - h.transform.position).normalized) < h.useFOV)
+            h.ChangeState(new PatrolState());
     }
     
     public void Exit(Humanoid h)
     {
-        
+        Debug.Log("Lost Player");
     }
 }
 
